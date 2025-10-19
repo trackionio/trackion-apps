@@ -1,5 +1,9 @@
 name: Publish Release with Auto-Update
 
+# This workflow should run in the PUBLIC repo (trackionio/trackion-apps)
+# NOT in the private repo
+# Copy this file to: trackionio/trackion-apps/.github/workflows/publish-update.yml
+
 on:
   release:
     types: [published]
@@ -15,10 +19,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download all release assets
+      - name: Download all release assets from THIS repository
         uses: robinraju/release-downloader@v1.11
         with:
-          repository: trackionio/trackion-apps
+          repository: ${{ github.repository }} # Download from the public repo itself
           tag: ${{ github.event.release.tag_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           fileName: "*"
@@ -84,7 +88,7 @@ jobs:
             latest-mac.yml
             latest-linux.yml
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: trackionio/trackion-apps
+          # repository field not needed - uploads to the repo where this workflow runs
           fail_on_unmatched_files: false
 
       - name: Update summary
