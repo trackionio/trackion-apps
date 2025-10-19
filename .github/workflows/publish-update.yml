@@ -1,0 +1,96 @@
+name: Publish Release with Auto-Update
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  generate-update-manifest:
+    name: Generate Update Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all release assets
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: trackionio/trackion-apps
+          tag: ${{ github.event.release.tag_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fileName: "*"
+          out-file-path: "release-assets"
+
+      - name: Generate latest.yml and latest-mac.yml
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "=== Generating update manifests ==="
+
+          # Generate latest.yml for Windows
+          cat > latest.yml << EOF
+          version: $VERSION
+          files:
+            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-$VERSION%20Setup.exe
+              sha512: $(sha512sum release-assets/*Setup*.exe | awk '{print $1}')
+              size: $(stat -c%s release-assets/*Setup*.exe)
+          path: Trackion-$VERSION Setup.exe
+          sha512: $(sha512sum release-assets/*Setup*.exe | awk '{print $1}')
+          releaseDate: $RELEASE_DATE
+          EOF
+
+          # Generate latest-mac.yml for macOS
+          cat > latest-mac.yml << EOF
+          version: $VERSION
+          files:
+            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-darwin-arm64-$VERSION.zip
+              sha512: $(sha512sum release-assets/*-darwin-arm64-*.zip | awk '{print $1}')
+              size: $(stat -c%s release-assets/*-darwin-arm64-*.zip)
+            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-darwin-x64-$VERSION.zip
+              sha512: $(sha512sum release-assets/*-darwin-x64-*.zip | awk '{print $1}')
+              size: $(stat -c%s release-assets/*-darwin-x64-*.zip)
+          path: Trackion-darwin-arm64-$VERSION.zip
+          sha512: $(sha512sum release-assets/*-darwin-arm64-*.zip | awk '{print $1}')
+          releaseDate: $RELEASE_DATE
+          EOF
+
+          # Generate latest-linux.yml for Linux
+          cat > latest-linux.yml << EOF
+          version: $VERSION
+          files:
+            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/trackion_${VERSION}_amd64.deb
+              sha512: $(sha512sum release-assets/*.deb | awk '{print $1}')
+              size: $(stat -c%s release-assets/*.deb)
+          path: trackion_${VERSION}_amd64.deb
+          sha512: $(sha512sum release-assets/*.deb | awk '{print $1}')
+          releaseDate: $RELEASE_DATE
+          EOF
+
+          echo "✓ Generated latest.yml"
+          echo "✓ Generated latest-mac.yml"
+          echo "✓ Generated latest-linux.yml"
+
+      - name: Upload update manifests to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            latest.yml
+            latest-mac.yml
+            latest-linux.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: trackionio/trackion-apps
+          fail_on_unmatched_files: false
+
+      - name: Update summary
+        run: |
+          echo "✅ Auto-update manifests published"
+          echo ""
+          echo "Windows: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest.yml"
+          echo "macOS: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest-mac.yml"
+          echo "Linux: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest-linux.yml"
