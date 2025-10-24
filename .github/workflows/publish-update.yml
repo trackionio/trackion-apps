@@ -63,21 +63,8 @@ jobs:
           releaseDate: $RELEASE_DATE
           EOF
 
-          # Generate latest-linux.yml for Linux
-          cat > latest-linux.yml << EOF
-          version: $VERSION
-          files:
-            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/trackion_${VERSION}_amd64.deb
-              sha512: $(sha512sum release-assets/*.deb | awk '{print $1}')
-              size: $(stat -c%s release-assets/*.deb)
-          path: trackion_${VERSION}_amd64.deb
-          sha512: $(sha512sum release-assets/*.deb | awk '{print $1}')
-          releaseDate: $RELEASE_DATE
-          EOF
-
           echo "✓ Generated latest.yml"
           echo "✓ Generated latest-mac.yml"
-          echo "✓ Generated latest-linux.yml"
 
       - name: Upload update manifests to release
         uses: softprops/action-gh-release@v2
@@ -86,7 +73,6 @@ jobs:
           files: |
             latest.yml
             latest-mac.yml
-            latest-linux.yml
           token: ${{ secrets.GITHUB_TOKEN }}
           # repository field not needed - uploads to the repo where this workflow runs
           fail_on_unmatched_files: false
@@ -97,4 +83,3 @@ jobs:
           echo ""
           echo "Windows: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest.yml"
           echo "macOS: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest-mac.yml"
-          echo "Linux: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest-linux.yml"
