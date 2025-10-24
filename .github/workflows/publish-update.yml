@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   generate-update-manifest:
+    if: ${{ github.repository == 'trackionio/trackion-apps' }}
     name: Generate Update Manifest
     runs-on: ubuntu-latest
     steps:
@@ -83,3 +84,4 @@ jobs:
           echo ""
           echo "Windows: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest.yml"
           echo "macOS: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/latest-mac.yml"
+          echo "Stable Windows installer: https://github.com/trackionio/trackion-apps/releases/download/${{ github.event.release.tag_name }}/Trackion-Setup.exe"
