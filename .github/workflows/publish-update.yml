@@ -37,35 +37,44 @@ jobs:
 
           echo "=== Generating update manifests ==="
 
-          # Generate latest.yml for Windows
-          cat > latest.yml << EOF
-          version: $VERSION
-          files:
-            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-$VERSION%20Setup.exe
-              sha512: $(sha512sum release-assets/*Setup*.exe | awk '{print $1}')
-              size: $(stat -c%s release-assets/*Setup*.exe)
-          path: Trackion-$VERSION Setup.exe
-          sha512: $(sha512sum release-assets/*Setup*.exe | awk '{print $1}')
-          releaseDate: $RELEASE_DATE
-          EOF
+          # Get Windows file info
+          WINDOWS_SHA512=$(sha512sum release-assets/*Setup*.exe | awk '{print $1}')
+          WINDOWS_SIZE=$(stat -c%s release-assets/*Setup*.exe)
 
-          # Generate latest-mac.yml for macOS
-          cat > latest-mac.yml << EOF
-          version: $VERSION
-          files:
-            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-darwin-arm64-$VERSION.zip
-              sha512: $(sha512sum release-assets/*-darwin-arm64-*.zip | awk '{print $1}')
-              size: $(stat -c%s release-assets/*-darwin-arm64-*.zip)
-            - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-darwin-x64-$VERSION.zip
-              sha512: $(sha512sum release-assets/*-darwin-x64-*.zip | awk '{print $1}')
-              size: $(stat -c%s release-assets/*-darwin-x64-*.zip)
-          path: Trackion-darwin-arm64-$VERSION.zip
-          sha512: $(sha512sum release-assets/*-darwin-arm64-*.zip | awk '{print $1}')
-          releaseDate: $RELEASE_DATE
-          EOF
+          # Generate latest.yml for Windows (no leading spaces!)
+          echo "version: $VERSION" > latest.yml
+          echo "files:" >> latest.yml
+          echo "  - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-$VERSION%20Setup.exe" >> latest.yml
+          echo "    sha512: $WINDOWS_SHA512" >> latest.yml
+          echo "    size: $WINDOWS_SIZE" >> latest.yml
+          echo "path: Trackion-$VERSION Setup.exe" >> latest.yml
+          echo "sha512: $WINDOWS_SHA512" >> latest.yml
+          echo "releaseDate: $RELEASE_DATE" >> latest.yml
+
+          # Get macOS file info
+          ARM64_SHA512=$(sha512sum release-assets/*-darwin-arm64-*.zip | awk '{print $1}')
+          ARM64_SIZE=$(stat -c%s release-assets/*-darwin-arm64-*.zip)
+          X64_SHA512=$(sha512sum release-assets/*-darwin-x64-*.zip | awk '{print $1}')
+          X64_SIZE=$(stat -c%s release-assets/*-darwin-x64-*.zip)
+
+          # Generate latest-mac.yml for macOS (no leading spaces!)
+          echo "version: $VERSION" > latest-mac.yml
+          echo "files:" >> latest-mac.yml
+          echo "  - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-darwin-arm64-$VERSION.zip" >> latest-mac.yml
+          echo "    sha512: $ARM64_SHA512" >> latest-mac.yml
+          echo "    size: $ARM64_SIZE" >> latest-mac.yml
+          echo "  - url: https://github.com/trackionio/trackion-apps/releases/download/$TAG/Trackion-darwin-x64-$VERSION.zip" >> latest-mac.yml
+          echo "    sha512: $X64_SHA512" >> latest-mac.yml
+          echo "    size: $X64_SIZE" >> latest-mac.yml
+          echo "path: Trackion-darwin-arm64-$VERSION.zip" >> latest-mac.yml
+          echo "sha512: $ARM64_SHA512" >> latest-mac.yml
+          echo "releaseDate: $RELEASE_DATE" >> latest-mac.yml
 
           echo "✓ Generated latest.yml"
+          cat latest.yml
+          echo ""
           echo "✓ Generated latest-mac.yml"
+          cat latest-mac.yml
 
       - name: Upload update manifests to release
         uses: softprops/action-gh-release@v2
