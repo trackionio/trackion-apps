@@ -59,7 +59,7 @@ Trackion ships with a built-in updater that checks the public releases. Updates 
 
 ## Support
 
-If you encounter issues installing or updating the app, contact: contact@trackion.io
+If you encounter issues installing or updating the app, contact: support@trackion.io
 
 When contacting support, please include:
 
@@ -79,4 +79,4 @@ See the LICENSE file included in each release artifact for licensing details.
 
 ---
 
-For repository issues related to the releases themselves (missing assets, checksum mismatches, tagging problems), open an issue in this repository or email contact@trackion.io.
+For repository issues related to the releases themselves (missing assets, checksum mismatches, tagging problems), open an issue in this repository or email support@trackion.io.
